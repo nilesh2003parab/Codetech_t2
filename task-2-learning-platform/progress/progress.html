@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Your Progress | LearnX</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="firebase/config.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Your Learning Progress</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="quiz/quiz.html">Quiz</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Hello, <span id="user-email"></span></h2>
+    <h3>Your Quiz Submissions:</h3>
+    <ul id="progress-list"></ul>
+  </main>
+
+  <script>
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        alert("You must be logged in to view your progress.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      document.getElementById("user-email").innerText = user.email;
+
+      const progressList = document.getElementById("progress-list");
+
+      firebase.firestore()
+        .collection("quizResults")
+        .where("uid", "==", user.uid)
+        .orderBy("timestamp", "desc")
+        .get()
+        .then(snapshot => {
+          if (snapshot.empty) {
+            progressList.innerHTML = "<li>No quizzes submitted yet.</li>";
+            return;
+          }
+
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const time = data.timestamp?.toDate().toLocaleString() || "N/A";
+            const item = document.createElement("li");
+            item.textContent = `${data.quiz} - Score: ${data.score} - ${time}`;
+            progressList.appendChild(item);
+          });
+        });
+    });
+
+
+    function saveProgress(lesson) {
+    localStorage.setItem('lastWatched', lesson);
+  }
+  
+  function loadProgress() {
+    return localStorage.getItem('lastWatched') || 'Start your first lesson!';
+  }
+  
+  </script>
+</body>
+</html>
+
+

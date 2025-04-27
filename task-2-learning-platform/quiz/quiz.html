@@ -1,0 +1,70 @@
+<!-- quiz/quiz.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="../firebase/config.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz 1</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header>
+    <h1>LearnX Quiz</h1>
+    <nav>
+      <a href="../index.html">Home</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="quiz-section">
+      <h2>Quiz 1: What is HTML?</h2>
+      <input type="text" id="answer" placeholder="Your answer here">
+      <button onclick="checkAnswer()">Submit</button>
+      <p id="result"></p>
+    </section>
+  </main>
+
+  <script>
+    function checkAnswer() {
+      const answer = document.getElementById("answer").value.toLowerCase();
+      const result = document.getElementById("result");
+      if (answer.includes("markup")) {
+        result.innerText = "✅ Correct!";
+        localStorage.setItem("quiz1", "passed");
+      } else {
+        result.innerText = "❌ Try again!";
+      }
+    }
+  </script>
+  <script>
+    // Block access if user is not logged in
+firebase.auth().onAuthStateChanged(user => {
+  if (!user) {
+    alert("You must be logged in to access the quiz.");
+    window.location.href = "../login.html";
+  }
+});
+
+if (answer.includes("markup")) {
+  result.innerText = "✅ Correct!";
+  localStorage.setItem("quiz1", "passed");
+
+  const user = firebase.auth().currentUser;
+  if (user) {
+    firebase.firestore().collection("quizResults").add({
+      uid: user.uid,
+      email: user.email,
+      quiz: "HTML Basics",
+      score: 1,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  }
+}
+
+  </script>
+</body>
+</html>
